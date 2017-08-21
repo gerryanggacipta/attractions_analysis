@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup, Comment
 import requests
 import re
+import data_access as da
 
 
 
