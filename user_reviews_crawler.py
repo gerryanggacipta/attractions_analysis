@@ -1,13 +1,15 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from bs4 import BeautifulSoup, Comment
 import requests
 import re
 import data_access as da
 
 
-
 output_file = "tripadvisor_output.csv"
 review_counter=0;
-url =	"https://www.tripadvisor.com.sg/Attraction_Review-g298162-d320634-Reviews-or{data_offset}-Tokyo_Disneyland-Urayasu_Chiba_Prefecture_Kanto.html"
+url ="https://www.tripadvisor.com.sg/Hotel_Review-g294265-d1770798-Reviews-or{data_offset}-Marina_Bay_Sands-Singapore.html"
 f = open(output_file, "w")
 
 
@@ -212,7 +214,7 @@ def loop_pages(url):
 	print(last_data_offset)
 	
 	# Step 2: Loop through the pages till the last page
-	for current_offset in range(0, last_data_offset+1, 10):
+	for current_offset in range(0, last_data_offset+1, 5):
 		current_url = url.format(data_offset = current_offset)
 		process_page(current_url)
 		
