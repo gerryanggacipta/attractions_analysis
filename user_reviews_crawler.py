@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup, Comment
 import requests
 import re
 import data_access as da
+import datetime
 
 
 output_file = "tripadvisor_output.csv"
@@ -96,8 +97,8 @@ def get_user_info(username):
 		the_badges.append(a_badge.get_text())
 		print("Badge: %s" % a_badge.get_text())
 	
-	return (str(reviews), str(helpful_votes), str(travel_style),
-					str(points), str(level), str(the_badges))
+	return (int(reviews), int(helpful_votes), travel_style,
+			int(points.replace(",", "")), int(level), the_badges)
 
 
 """-----------------------
@@ -142,7 +143,9 @@ def process_page(url):
 		
 	
 	container = soup.find_all("div", class_="review")
-	
+
+	review_list = []
+	user_profile_list = []
 	for a_container in container:
 		global review_counter
 		review_counter = review_counter+1;
@@ -188,31 +191,47 @@ def process_page(url):
 		username = str(get_username(uid))
 		print("username: %s" % username)
 		
-		# Convert all parameters to string
-		#review_counter = str(review_counter)
+		# Convert all parameters to their suitable types accordingly
 		screen_name = str(screen_name)
 		user_location = str(user_location)
-		rating = str(rating)
-		rating_date = str(rating_date)
+		rating = int(rating)
+		rating_date =  datetime.datetime.strptime(rating_date, "%d %B %Y")
 		title = str(title)
 		entry = str(entry)
 		uid = str(uid)
 		username = str(username)
 		
 		(reviews, helpful_votes, travel_style, points, level, the_badges) = get_user_info(username)
-		
-		f.write(str(review_counter) + "\t" + screen_name   + "\t" + user_location + "\t"
-					+ rating              + "\t" + rating_date   + "\t" + title         + "\t"
-					+ entry               + "\t" + uid           + "\t" + username      + "\t"
-					+ reviews             + "\t" + helpful_votes + "\t" + travel_style  + "\t"
-					+ points              + "\t" + level         + "\t" + the_badges    + "\n"
-		)
-		
-		# TODO @Gerry. This is for each user + entry. need to convert to json and store them in a list.
+
+		review = {
+			'_id' 			: uid ,
+			's/n' 			: review_counter,
+			'screen_name' 	: screen_name,
+			'location' 		: user_location,
+			'rating' 		: rating,
+			'rating_date' 	: rating_date,
+			'title' 		: user_location,
+			'entry' 		: entry,
+			'user_id' 		: username
+		}
+
+		user_profile = {
+			'_id' 			: username,
+			'no_reviews' 	: reviews,
+			'helpful_votes' : helpful_votes,
+			'travel_styles' : travel_style,
+			'points'		: points,
+			'level'			: level,
+			'badges'		: the_badges
+		}
+
+		review_list.append(review)
+		user_profile_list.append(user_profile)
 		
 		print("")
 	
-	# TODO @Gerry. Send to mongodb page-by-page information. 
+	da.insert("review", review_list)
+	da.insert("user_profile", user_profile_list)
 
 	
 	

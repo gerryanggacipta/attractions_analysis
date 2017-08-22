@@ -11,11 +11,11 @@ db = client.attraction
 
 """-------------------------------------------------------
 Insert list of documents
-e.g. insert([{"attraction":"Marina Bay Sands"},{"attraction":"Lau Pa Sat"},{"attraction" : "Jurong Bird Park"}])
+e.g. insert(review, [{"attraction":"Marina Bay Sands"},{"attraction":"Lau Pa Sat"},{"attraction" : "Jurong Bird Park"}])
 ----------------------------------------------------------"""
-def insert(docs):
-    db.review.insert_many(docs, ordered=False)
-    db.review.update_one({ "last_inserted_date": { "$exists" : "True"}}, {"$set": {"last_inserted_date":time.strftime("%d/%m/%Y")}}, upsert=True)
+def insert(collection, docs):
+    db[collection].insert_many(docs, ordered=False)
+    db[collection].update_one({ "last_inserted_date": { "$exists" : "True"}}, {"$set": {"last_inserted_date":time.strftime("%d/%m/%Y")}}, upsert=True)
 
 """-------------------------------------------------------
 Get the last date which reviews were inserted
