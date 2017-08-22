@@ -14,7 +14,7 @@ f = open(output_file, "w")
 
 
 """-------------------------------------------------------
-Function 1:
+Helper Function 1:
 Remove non-ascii characters from text string
 ----------------------------------------------------------"""
 def remove_nonascii(text):
@@ -24,10 +24,21 @@ def remove_nonascii(text):
 	else:
 		return text
 
-
-
+	
+"""-------------------------------------------------------------------
+Helper Function 2:
+Extract country from location. Note: Country is after the last commas
+-----------------------------------------------------------------------"""
+def extract_country(location):
+	if location is None:
+		return
+	
+	country = location.split(",")[-1]
+	return country
+	
+	
 """----------------------------------
-Function 2:
+Function 1:
 Get username using uid 
 -------------------------------------"""
 def get_username(uid):
@@ -40,7 +51,7 @@ def get_username(uid):
 	return username
 
 """----------------------------------------
-Function 3:
+Function 2:
 Get user info using username
 -------------------------------------------"""
 def get_user_info(username):
@@ -50,7 +61,6 @@ def get_user_info(username):
 	response = requests.get("https://www.tripadvisor.com.sg" + username)
 	container = BeautifulSoup(response.content, "html.parser")
 	
-	print("------------------------------------------------------")
 	reviews = container.find("a", {"name":"reviews"}).string
 	reviews = re.search("(.*) Review", reviews).group(1)
 	print("Reviews: %s" % reviews)
@@ -86,22 +96,12 @@ def get_user_info(username):
 		the_badges.append(a_badge.get_text())
 		print("Badge: %s" % a_badge.get_text())
 	
-	
-	f.write(str(reviews)      + "\t" + str(helpful_votes) + "\t"
-				+ str(travel_style) + "\t" + str(points)        + "\t"
-				+ str(level)        + "\t"
-				+ str(the_badges)   + "\n"
-				)
-	
-	print("------------------------------------------------------")
-	
-	
+	return (str(reviews), str(helpful_votes), str(travel_style),
+					str(points), str(level), str(the_badges))
 
-	
-	
 
 """-----------------------
-Function 4:
+Function 3:
 Process page
 --------------------------"""
 def process_page(url):
@@ -157,6 +157,7 @@ def process_page(url):
 			user_location = "None"
 		else:
 			user_location = remove_nonascii(user_location.string)
+			user_location = extract_country(str(user_location))
 		print("User location: %s" % user_location)
 		
 		
@@ -184,21 +185,39 @@ def process_page(url):
 		uid = uid["id"]	
 		uid = re.search("UID_(.*)-SRC*", uid).group(1)
 		print("uid: %s" % uid)
-		username = get_username(uid)
+		username = str(get_username(uid))
 		print("username: %s" % username)
 		
-		f.write(str(review_counter) + "\t" + str(screen_name) + "\t"
-					+ str(user_location)  + "\t" + str(rating)      + "\t"
-					+ str(rating_date)    + "\t" + str(title)       + "\t"
-					+ str(entry)          + "\t"
-					+ str(uid)            + "\t" + str(username)    + "\t"
-					)
+		# Convert all parameters to string
+		#review_counter = str(review_counter)
+		screen_name = str(screen_name)
+		user_location = str(user_location)
+		rating = str(rating)
+		rating_date = str(rating_date)
+		title = str(title)
+		entry = str(entry)
+		uid = str(uid)
+		username = str(username)
 		
-		get_user_info(username)
+		(reviews, helpful_votes, travel_style, points, level, the_badges) = get_user_info(username)
+		
+		f.write(str(review_counter) + "\t" + screen_name   + "\t" + user_location + "\t"
+					+ rating              + "\t" + rating_date   + "\t" + title         + "\t"
+					+ entry               + "\t" + uid           + "\t" + username      + "\t"
+					+ reviews             + "\t" + helpful_votes + "\t" + travel_style  + "\t"
+					+ points              + "\t" + level         + "\t" + the_badges    + "\n"
+		)
+		
+		# TODO @Gerry. This is for each user + entry. need to convert to json and store them in a list.
+		
 		print("")
+	
+	# TODO @Gerry. Send to mongodb page-by-page information. 
 
+	
+	
 """-------------------------------------------------
-Function 5:
+Function 4:
 [1] Find out last page offset
 [2] Loop through all pages till the last page
 ----------------------------------------------------"""
