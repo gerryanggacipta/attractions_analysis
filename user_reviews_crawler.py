@@ -209,7 +209,7 @@ def process_page(url):
 			'location' 		: user_location,
 			'rating' 		: rating,
 			'rating_date' 	: rating_date,
-			'title' 		: user_location,
+			'title' 		: title,
 			'entry' 		: entry,
 			'user_id' 		: username
 		}

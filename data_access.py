@@ -19,7 +19,6 @@ def insert(collection, docs):
         db[collection].insert_many(docs, ordered=False)
     except pymongo.errors.BulkWriteError:
         print("Duplicate(s) found !")
-
     db[collection].update_one({ "last_inserted_date": { "$exists" : "True"}}, {"$set": {"last_inserted_date":time.strftime("%d/%m/%Y")}}, upsert=True)
 
 """-------------------------------------------------------
