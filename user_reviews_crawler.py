@@ -205,7 +205,6 @@ def process_page(url):
 
 		review = {
 			'_id' 			: uid ,
-			's/n' 			: review_counter,
 			'screen_name' 	: screen_name,
 			'location' 		: user_location,
 			'rating' 		: rating,
