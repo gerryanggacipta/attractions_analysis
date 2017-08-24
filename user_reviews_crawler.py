@@ -275,6 +275,8 @@ Function 4:
 def loop_pages(url):
 	# Step 1: Get last inserted date from mongodb
 	last_inserted_date = da.get_last_inserted_date();    # e.g 22/08/2017
+	if last_inserted_date is None:
+		last_inserted_date = "01/01/1980"		# arbitary date
 	print("Last inserted date: %s" % last_inserted_date)
 	
 	
