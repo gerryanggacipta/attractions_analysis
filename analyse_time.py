@@ -26,28 +26,35 @@ bad_reviews_yearly = {}
 for x in reviews.find({"rating": {"$gt": 3}}):
     try:
         good_reviews_monthly[x['rating_date'].month] = good_reviews_monthly[x['rating_date'].month]+1
-        good_reviews_yearly[x['rating_date'].year] = good_reviews_yearly[x['rating_date'].year]+1  
     except:
         good_reviews_monthly[x['rating_date'].month] = 1
+        
+    try:
+        good_reviews_yearly[x['rating_date'].year] = good_reviews_yearly[x['rating_date'].year]+1
+    except:        
         good_reviews_yearly[x['rating_date'].year] = 1
 
 
 for x in reviews.find({"rating": {"$eq": 3}}):
     try:
         avg_reviews_monthly[x['rating_date'].month] = avg_reviews_monthly[x['rating_date'].month]+1
-        avg_reviews_yearly[x['rating_date'].year] = avg_reviews_yearly[x['rating_date'].year]+1  
     except:
         avg_reviews_monthly[x['rating_date'].month] = 1
+
+    try:
+        avg_reviews_yearly[x['rating_date'].year] = avg_reviews_yearly[x['rating_date'].year]+1
+    except:        
         avg_reviews_yearly[x['rating_date'].year] = 1
 
-
-
 for x in reviews.find({"rating": {"$lt": 3}}):
-    try:
+    try: 
         bad_reviews_monthly[x['rating_date'].month] = bad_reviews_monthly[x['rating_date'].month]+1
-        bad_reviews_yearly[x['rating_date'].year] = bad_reviews_yearly[x['rating_date'].year]+1 
-    except:
+    except: 
         bad_reviews_monthly[x['rating_date'].month] = 1
+        
+    try: 
+        bad_reviews_yearly[x['rating_date'].year] = bad_reviews_yearly[x['rating_date'].year]+1 
+    except: 
         bad_reviews_yearly[x['rating_date'].year] = 1
 
 #seaonal good review
@@ -78,7 +85,7 @@ plt.show()
 
 #trend good review
 plt.plot(*zip(*sorted(good_reviews_yearly.items())))
-plt.xlabel('Month')
+plt.xlabel('Year')
 plt.ylabel('Good Reviews')
 plt.title('Trend')
 plt.grid(True)
@@ -86,7 +93,7 @@ plt.show()
 
 #trend average review
 plt.plot(*zip(*sorted(avg_reviews_yearly.items())))
-plt.xlabel('Month')
+plt.xlabel('Year')
 plt.ylabel('Average Reviews')
 plt.title('Trend')
 plt.grid(True)
@@ -94,7 +101,7 @@ plt.show()
 
 #trend bad review
 plt.plot(*zip(*sorted(bad_reviews_yearly.items())))
-plt.xlabel('Month')
+plt.xlabel('Year')
 plt.ylabel('Bad Reviews')
 plt.title('Trend')
 plt.grid(True)
