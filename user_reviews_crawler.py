@@ -6,12 +6,12 @@ import requests
 import re
 import data_access as da
 import datetime
-
+import time
 
 output_file = "tripadvisor_output.csv"
 review_counter=0;
 url ="https://www.tripadvisor.com.sg/Hotel_Review-g294265-d1770798-Reviews-or{data_offset}-Marina_Bay_Sands-Singapore.html"
-f = open(output_file, "w")
+#f = open(output_file, "w")
 
 
 """-------------------------------------------------------
@@ -20,8 +20,8 @@ Remove non-ascii characters from text string
 ----------------------------------------------------------"""
 def remove_nonascii(text):
 	if text is not None:
-		#return text.encode("ascii", "ignore").decode("ascii").strip()
-		return text.encode("utf-8")
+		return text.encode("ascii", "ignore").decode("ascii").strip()
+		#return text.encode("utf-8")
 	else:
 		return text
 
@@ -34,9 +34,28 @@ def extract_country(location):
 	if location is None:
 		return
 	
-	country = location.split(",")[-1]
+	country = location.split(",")[-1].strip()
 	return country
+
+
+"""---------------------------------------------------------------
+Helper function 3:
+Date comparison. Note that both dates should be in string format.
+Result: True  - date_new is newer
+        False - date_new is older or same date
+-------------------------------------------------------------------"""
+def compare_date_isnewer(date_new, date_original):
+	new_date_new = time.strptime(date_new, "%d/%m/%Y")
+	new_date_original = time.strptime(date_original, "%d/%m/%Y")
 	
+	if (new_date_new <= new_date_original):
+		return False
+	else:
+		return True
+	
+	
+	
+
 	
 """----------------------------------
 Function 1:
@@ -105,11 +124,13 @@ def get_user_info(username):
 Function 3:
 Process page
 --------------------------"""
-def process_page(url):
+def process_page(url, last_inserted_date):
 	if url is None:
 		return
 	
 	print("Processing %s" % url)
+	
+	to_continue_scraping = True
 	
 	# Step 1: 
 	html = requests.get(url)
@@ -164,12 +185,18 @@ def process_page(url):
 		print("User location: %s" % user_location)
 		
 		
-		
 		# Get rating: 	<span class="ui_bubble_rating bubble_50"></span>
 		rating = a_container.find("span", class_="ui_bubble_rating")["class"][1][7]
 		print("Rating: %s" % rating)
 		
 		rating_date = a_container.find("span", class_="ratingDate")["title"]
+		
+		# Condition: if entry date is older, stop processing all the remaining entries
+		temp_rating_date = datetime.datetime.strptime(rating_date, "%d %B %Y").strftime("%d/%m/%Y")
+		if not compare_date_isnewer(temp_rating_date, last_inserted_date):
+			to_continue_scraping = False
+			break;
+			
 		print("Rating date: %s" % rating_date)
 		
 		title = remove_nonascii(a_container.find("span", class_="noQuotes").string)
@@ -224,14 +251,20 @@ def process_page(url):
 			'badges'		: the_badges
 		}
 
+		
+		# Add to list
 		review_list.append(review)
 		user_profile_list.append(user_profile)
 		
 		print("")
 	
-	da.insert("review", review_list)
-	da.insert("user_profile", user_profile_list)
-
+	# Send list to mongodb
+	if (len(review_list)!=0):
+		da.insert("review", review_list)
+	if (len(user_profile_list)!=0):
+		da.insert("user_profile", user_profile_list)
+	
+	return to_continue_scraping
 	
 	
 """-------------------------------------------------
@@ -240,7 +273,12 @@ Function 4:
 [2] Loop through all pages till the last page
 ----------------------------------------------------"""
 def loop_pages(url):
-	# Step 1: Find out the last page offset
+	# Step 1: Get last inserted date from mongodb
+	last_inserted_date = da.get_last_inserted_date();    # e.g 22/08/2017
+	print("Last inserted date: %s" % last_inserted_date)
+	
+	
+	# Step 2: Find out the last page offset
 	data_offset=0
 	current_url = url.format(data_offset = 0)
 	
@@ -250,10 +288,14 @@ def loop_pages(url):
 	last_data_offset = int(soup.find("span", class_="last").get("data-offset"))
 	print(last_data_offset)
 	
-	# Step 2: Loop through the pages till the last page
+	# Step 3: Loop through the pages till the last page
 	for current_offset in range(0, last_data_offset+1, 5):
 		current_url = url.format(data_offset = current_offset)
-		process_page(current_url)
+		to_continue_scraping = process_page(current_url, last_inserted_date)
+		# Do not continue scraping
+		if not to_continue_scraping:
+			print("\nFinish scraping till last inserted date...")
+			break
 		
 		
 """----------------------
@@ -263,10 +305,10 @@ import time, sys
 try:
 	loop_pages(url)
 except KeyboardInterrupt:
-	f.close()
+	#f.close()
 	print("\t\tFile closed successfully. Bye.")
 except:
-	f.close()
+	#f.close()
 	print("\t\tException caught. File closed successfully. Bye.")
 	
 	print(sys.exc_info()[0])
