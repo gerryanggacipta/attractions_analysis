@@ -10,10 +10,10 @@ from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 
 def DrawWordCloud(text):
-    wordcloud = WordCloud().generate(text)  
-    plt.imshow(wordcloud, interpolation='bilinear')
-    plt.axis("off")
-    wordcloud = WordCloud(max_font_size=40).generate(text)
+    #wordcloud = WordCloud().generate(text)  
+    #plt.imshow(wordcloud, interpolation='bilinear')
+    #plt.axis("off")
+    wordcloud = WordCloud(max_font_size=60).generate(text)
     plt.figure()
     plt.imshow(wordcloud, interpolation="bilinear")
     plt.axis("off")
