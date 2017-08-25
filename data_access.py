@@ -33,4 +33,4 @@ General query
 e.g. find( { "Rating": { $lt: 3 } } )
 ----------------------------------------------------------"""
 def find(query):
-    return db.review.find(query)
+    return db.review1.find(query)
