@@ -35,23 +35,30 @@ all_styles = ""
 for x in reviews.find({"rating": {"$gt": 3}}):
     for y in users.find({"_id": {"$eq": x['user_id']}}):
         for z in y['travel_styles']:
-             good_reviews_styles = good_reviews_styles + z
+             good_reviews_styles = good_reviews_styles + z.replace(" ", "_") + " "
 
 for x in reviews.find({"rating": {"$eq": 3}}):
     for y in users.find({"_id": {"$eq": x['user_id']}}):
         for z in y['travel_styles']:
-             avg_reviews_styles = avg_reviews_styles + z
+             avg_reviews_styles = avg_reviews_styles + z.replace(" ", "_") + " "
 
 for x in reviews.find({"rating": {"$lt": 3}}):
     for y in users.find({"_id": {"$eq": x['user_id']}}):
         for z in y['travel_styles']:
-             bad_reviews_styles = bad_reviews_styles + z
+             bad_reviews_styles = bad_reviews_styles + z.replace(" ", "_") + " "
              
 all_styles = good_reviews_styles + avg_reviews_styles + bad_reviews_styles
 
+print("good_reviews_styles")
 DrawWordCloud(good_reviews_styles)
+
+print("avg_reviews_styles")
 DrawWordCloud(avg_reviews_styles)
-DrawWordCloud(bad_reviews_styles)               
+
+print("bad_reviews_styles")
+DrawWordCloud(bad_reviews_styles)   
+
+print("all_styles") 
 DrawWordCloud(all_styles)
           
 client.close()     
