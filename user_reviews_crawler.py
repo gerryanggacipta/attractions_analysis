@@ -260,9 +260,9 @@ def process_page(url, last_inserted_date):
 	
 	# Send list to mongodb
 	if (len(review_list)!=0):
-		da.insert("review", review_list)
+		da.insert("review1", review_list)
 	if (len(user_profile_list)!=0):
-		da.insert("user_profile", user_profile_list)
+		da.insert("user_profile1", user_profile_list)
 	
 	return to_continue_scraping
 	
